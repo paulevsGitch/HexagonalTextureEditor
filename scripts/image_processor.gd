@@ -24,11 +24,11 @@ func load_image(path: String) -> void:
 		_source_image = null
 	else:
 		%TextureWarning.hide()
-		_preview = Image.create(_preview_size, _preview_size, false, Image.FORMAT_RGBA8)
 		var side = _source_image.get_width()
 		var prev_side = min(_preview_size, side)
+		_preview = Image.create(prev_side, prev_side, false, Image.FORMAT_RGBA8)
 		_prev_scale = float(side) / float(prev_side)
-		print(_prev_scale)
+		print(prev_side, " ", side, " ", _prev_scale)
 		for x in range(prev_side):
 			var px = int(float(x) * _prev_scale)
 			for y in range(prev_side):
@@ -97,7 +97,7 @@ func _process_image(img: Image, scale: float) -> Image:
 func _copy_image(img: Image) -> Image:
 	var side := img.get_width()
 	var result = Image.create(side, side, false, Image.FORMAT_RGBA8)
-	for y in range(0, side):
+	for y in range(side):
 		for x in range(side):
 			result.set_pixel(x, y, img.get_pixel(x, y))
 	return result
