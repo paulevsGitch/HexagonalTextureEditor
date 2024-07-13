@@ -1,0 +1,320 @@
+[gd_scene load_steps=9 format=3 uid="uid://2jvpr5032j3s"]
+
+[ext_resource type="Theme" uid="uid://blbn6quylvj1x" path="res://theme.tres" id="1_asm3a"]
+[ext_resource type="Script" path="res://scripts/show_dialog.gd" id="1_bdfvm"]
+[ext_resource type="Script" path="res://scripts/file_loader.gd" id="2_bh2ax"]
+[ext_resource type="Script" path="res://scripts/image_processor.gd" id="2_sq23d"]
+[ext_resource type="Script" path="res://scripts/linear_change.gd" id="5_ldo3v"]
+[ext_resource type="Script" path="res://scripts/update_image.gd" id="6_1leg0"]
+[ext_resource type="Script" path="res://scripts/solid_change.gd" id="6_q71ps"]
+[ext_resource type="Script" path="res://scripts/file_saver.gd" id="7_ndl5j"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_asm3a")
+
+[node name="ImageProcessor" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_sq23d")
+
+[node name="FileLoad" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Open a File"
+initial_position = 1
+size = Vector2i(600, 300)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.png")
+use_native_dialog = true
+script = ExtResource("2_bh2ax")
+
+[node name="FileSave" type="FileDialog" parent="."]
+unique_name_in_owner = true
+auto_translate_mode = 1
+title = "Save Image"
+initial_position = 1
+size = Vector2i(600, 300)
+ok_button_text = "Save"
+access = 2
+filters = PackedStringArray("*.png")
+use_native_dialog = true
+script = ExtResource("7_ndl5j")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 256.0
+grow_horizontal = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="MainTexture" type="TextureRect" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+texture_filter = 1
+clip_contents = true
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+expand_mode = 2
+stretch_mode = 4
+
+[node name="Panel" type="Panel" parent="MarginContainer/VBoxContainer/HBoxContainer/MainTexture"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureWarning" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/MainTexture"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+text = "NOT
+SQUARE
+TEXTURE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureUpdating" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/MainTexture"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 20
+text = "UPDATING"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PathRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PathRow"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "Path:"
+
+[node name="ImagePath" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PathRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+editable = false
+
+[node name="Button" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PathRow" node_paths=PackedStringArray("dialog")]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Open"
+script = ExtResource("1_bdfvm")
+dialog = NodePath("../../../../../../FileLoad")
+
+[node name="PixelRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PixelRow"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Pixel Mode:"
+
+[node name="PixelMode" type="OptionButton" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PixelRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+selected = 0
+item_count = 3
+popup/item_0/text = "Clamp"
+popup/item_1/text = "Tile"
+popup/item_1/id = 1
+popup/item_2/text = "Transparent"
+popup/item_2/id = 2
+script = ExtResource("6_1leg0")
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "Type:"
+
+[node name="OptionButton" type="OptionButton" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+selected = 0
+item_count = 2
+popup/item_0/text = "Linear"
+popup/item_1/text = "Hard"
+popup/item_1/id = 1
+
+[node name="TopGap" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+
+[node name="InterpolationMode" type="TabContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+tab_alignment = 1
+current_tab = 1
+script = ExtResource("6_1leg0")
+
+[node name="Linear" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode"]
+visible = false
+layout_mode = 2
+script = ExtResource("5_ldo3v")
+metadata/_tab_index = 0
+
+[node name="TopGap" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Linear"]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+
+[node name="Row" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Linear"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Linear/Row"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "Power:"
+
+[node name="LinearSlider" type="HSlider" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Linear/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+min_value = 1.0
+max_value = 10.0
+step = 0.1
+value = 3.0
+
+[node name="LinearValue" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Linear/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "3.0"
+horizontal_alignment = 2
+
+[node name="PixelRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Linear"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Linear/PixelRow"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Gradient Mode:"
+
+[node name="GradientMode" type="OptionButton" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Linear/PixelRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+selected = 0
+item_count = 2
+popup/item_0/text = "Linear"
+popup/item_1/text = "Circle"
+popup/item_1/id = 1
+script = ExtResource("6_1leg0")
+
+[node name="Solid" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode"]
+layout_mode = 2
+script = ExtResource("6_q71ps")
+metadata/_tab_index = 1
+
+[node name="TopGap" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Solid"]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+
+[node name="Row" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Solid"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Solid/Row"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "Offset:"
+
+[node name="SolidValue" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Solid/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "1"
+
+[node name="Label2" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Solid/Row"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "px"
+
+[node name="Row2" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Solid"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Solid/Row2"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "Blend:"
+
+[node name="BlendValue" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Solid/Row2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "0"
+
+[node name="Label2" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Solid/Row2"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "px"
+
+[node name="SaveRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/SaveRow"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "Save Path:"
+
+[node name="SavePath" type="LineEdit" parent="MarginContainer/VBoxContainer/SaveRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+editable = false
+
+[node name="Button" type="Button" parent="MarginContainer/VBoxContainer/SaveRow" node_paths=PackedStringArray("dialog")]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Save"
+script = ExtResource("1_bdfvm")
+dialog = NodePath("../../../../FileSave")
+
+[connection signal="item_selected" from="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PixelRow/PixelMode" to="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PixelRow/PixelMode" method="_update_image"]
+[connection signal="tab_changed" from="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode" to="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode" method="_update_image"]
+[connection signal="item_selected" from="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Linear/PixelRow/GradientMode" to="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode/Linear/PixelRow/GradientMode" method="_update_image"]
