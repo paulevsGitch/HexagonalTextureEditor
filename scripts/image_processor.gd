@@ -1,13 +1,14 @@
 extends Node
 
-const _rot_angle_a = deg_to_rad(30)
-const _rot_angle_b = deg_to_rad(90)
-const _sqrt_3 = 1.0 / sqrt(3.0)
-const _width_scale = 3.0 / (2.0 * sqrt(3.0))
+const _rot_angle_a := deg_to_rad(30)
+const _rot_angle_b := deg_to_rad(90)
+const _sqrt_3 := 1.0 / sqrt(3.0)
+const _width_scale := 3.0 / (2.0 * sqrt(3.0))
+const _preview_size := 150
 
-var source_image : Image
-var result : Image
-var _thread : Thread
+var _source_image: Image
+var _preview: Image
+var _prev_scale: float
 
 var _image_mode: int
 var _pixel_mode: int
@@ -17,46 +18,67 @@ var _offset: int
 var _blend: int
 
 func load_image(path: String) -> void:
-	source_image = Image.load_from_file(path)
-	if source_image.get_width() != source_image.get_height():
+	_source_image = Image.load_from_file(path)
+	if _source_image.get_width() != _source_image.get_height():
 		%TextureWarning.show()
-		source_image = null
+		_source_image = null
 	else:
 		%TextureWarning.hide()
+		_preview = Image.create(_preview_size, _preview_size, false, Image.FORMAT_RGBA8)
+		var side = _source_image.get_width()
+		var prev_side = min(_preview_size, side)
+		_prev_scale = float(side) / float(prev_side)
+		print(_prev_scale)
+		for x in range(prev_side):
+			var px = int(float(x) * _prev_scale)
+			for y in range(prev_side):
+				var py = int(float(y) * _prev_scale)
+				var color = _source_image.get_pixel(px, py)
+				_preview.set_pixel(x, y, color)
 		update_image()
 
 func save_image(path: String) -> void:
-	result.save_png(path)
+	Thread.new().start(_save_image_thread.bind(path, %SavePath))
 
 func update_image() -> void:
 	_offset = int(%SolidValue.text)
 	%SolidValue.text = str(_offset)
+	%SolidValue.caret_column = %SolidValue.text.length()
 	
 	_blend = int(%BlendValue.text)
 	%BlendValue.text = str(_blend)
+	%BlendValue.caret_column = %BlendValue.text.length()
 	
-	if source_image == null: return
+	if _source_image == null: return
 	
 	_image_mode = %InterpolationMode.current_tab
 	_pixel_mode = %PixelMode.selected
 	_gradient_mode = %GradientMode.selected
 	_power = %LinearSlider.value
 	
-	#if _thread != null and _thread.is_alive(): OS.kill(_thread)
-	_thread = Thread.new()
-	
 	%TextureUpdating.show()
-	_thread.start(_update_image_thread.bind(%MainTexture, %TextureUpdating))
+	Thread.new().start(_update_image_thread.bind(%MainTexture, %TextureUpdating))
+
+func _save_image_thread(path: String, path_text: LineEdit) -> void:
+	path_text.set_deferred("text", "Saving...")
+	var result := _process_image(_source_image, 1.0)
+	result.save_png(path)
+	path_text.set_deferred("text", path)
 
 func _update_image_thread(main_texture: TextureRect, texture_update: Control) -> void:
-	var sides = _copy_image(source_image)
-	result = _copy_image(source_image)
+	var result := _process_image(_preview, 1.0 / _prev_scale)
+	main_texture.set_deferred("texture", ImageTexture.create_from_image(result))
+	texture_update.call_deferred("hide")
+
+func _process_image(img: Image, scale: float) -> Image:
+	var sides = _copy_image(img)
+	var result = _copy_image(img)
 	
 	match _image_mode:
 		0:
 			_apply_gradient(sides)
 		1:
-			_apply_remove(sides)
+			_apply_remove(sides, scale)
 	
 	sides = _merge_image_down(sides)
 	_apply_triangle(sides)
@@ -70,8 +92,7 @@ func _update_image_thread(main_texture: TextureRect, texture_update: Control) ->
 	sides_rot = _rotate_image(sides, _rot_angle_b)
 	_blend_images(result, sides_rot)
 	
-	main_texture.set_deferred("texture", ImageTexture.create_from_image(result))
-	texture_update.call_deferred("hide")
+	return result
 
 func _copy_image(img: Image) -> Image:
 	var side := img.get_width()
@@ -113,15 +134,16 @@ func _apply_gradient(img: Image) -> void:
 				color.a *= pow(1.0 - min(sqrt(y2 + x2), 1.0), _power)
 				img.set_pixel(x, y, color)
 
-func _apply_remove(img: Image) -> void:
+func _apply_remove(img: Image, scale: float) -> void:
 	var side := img.get_width()
 	var half = side >> 1
-	var last_y = side - _offset
-	for y in range(_offset, last_y):
+	var offset = _offset * scale
+	var last_y = side - offset
+	for y in range(offset, last_y):
 		var blend := 0.0
 		if _blend > 0:
 			if y < half:
-				blend = max(0.0, 1.0 - float(y - _offset) / _blend)
+				blend = max(0.0, 1.0 - float(y - offset) / _blend)
 			else:
 				blend = max(0.0, 1.0 - float(last_y - y) / _blend)
 		for x in range(side):

@@ -30,7 +30,7 @@ size = Vector2i(600, 300)
 ok_button_text = "Open"
 file_mode = 0
 access = 2
-filters = PackedStringArray("*.png")
+filters = PackedStringArray("*.png", "*.jpg", "*.jpeg")
 use_native_dialog = true
 script = ExtResource("2_bh2ax")
 
@@ -189,11 +189,10 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 tab_alignment = 1
-current_tab = 1
+current_tab = 0
 script = ExtResource("6_1leg0")
 
 [node name="Linear" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode"]
-visible = false
 layout_mode = 2
 script = ExtResource("5_ldo3v")
 metadata/_tab_index = 0
@@ -248,6 +247,7 @@ popup/item_1/id = 1
 script = ExtResource("6_1leg0")
 
 [node name="Solid" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/InterpolationMode"]
+visible = false
 layout_mode = 2
 script = ExtResource("6_q71ps")
 metadata/_tab_index = 1
