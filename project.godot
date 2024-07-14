@@ -25,8 +25,3 @@ window/size/viewport_height=348
 [dotnet]
 
 project/assembly_name="HexagonalTextureEditor"
-
-[rendering]
-
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
