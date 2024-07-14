@@ -2,18 +2,28 @@ shader_type spatial;
 
 render_mode unshaded;
 
-uniform sampler2D sourceImage: source_color, filter_linear, repeat_enable, hint_default_transparent;
+uniform sampler2D sourceImage: source_color, filter_nearest, repeat_enable, hint_default_transparent;
+uniform sampler2D sideImage: source_color, filter_nearest, repeat_enable, hint_default_transparent;
+
 uniform int imageMode = 0;
 uniform int pixelMode = 0;
 uniform int gradientMode = 0;
 uniform float gradientPower = 3.0;
 uniform int solidValue = 1;
 uniform int blendValue = 0;
+uniform int sideMode = 0;
+uniform float sidesBlend = 0.0;
 
 const float sqrt3 = 1.0 / sqrt(3.0);
 const float angle30 = 30.0 / 180.0 * PI;
 const float angle90 = PI * 0.5;
 const float widthOffset = (1.0 - 3.0 / (2.0 * sqrt(3.0))) * 0.5;
+
+vec2 rotate(vec2 pos, float angle) {
+	float s = sin(angle);
+	float c = cos(angle);
+	return vec2(c * pos.x - s * pos.y, s * pos.x + c * pos.y);
+}
 
 void applyGradient(inout vec4 color, vec2 uv) {
 	float grad = abs(uv.y - 0.5) * 2.0;
@@ -45,16 +55,26 @@ void applySolid(inout vec4 color, vec2 uv) {
 	}
 }
 
-void applyTriangle(inout vec4 color, vec2 uv) {
-	float grad = abs(uv.y - 0.5) * sqrt3;
-	if (uv.x <= 0.5 - grad) color.a *= 0.0;
-	else if (uv.x >= 0.5 + grad) color.a *= 0.0;
+void applySide(inout vec4 color, vec2 uv) {
+	ivec2 size = textureSize(sideImage, 0);
+	float aspect = float(size.x) / float(size.y);
+	if (uv.y > 0.5) uv = vec2(1.0 - uv.x, 0.5 - abs(uv.y - 0.5));
+	if (sideMode == 0) uv = rotate(uv - 0.5, PI) + 0.5;
+	else if (sideMode == 2) uv = rotate(uv - 0.5, PI * 0.5) + 0.5;
+	else if (sideMode == 3) uv = rotate(uv - 0.5, PI * 1.5) + 0.5;
+	uv.y = clamp(uv.y * aspect, 0.0, 1.0);
+	color = texture(sideImage, uv);
 }
 
-vec2 rotate(vec2 pos, float angle) {
-	float s = sin(angle);
-	float c = cos(angle);
-	return vec2(c * pos.x - s * pos.y, s * pos.x + c * pos.y);
+void applyTriangle(inout vec4 color, vec2 uv) {
+	float grad = abs(uv.y - 0.5) * sqrt3;
+	grad = abs(0.5 - uv.x) - grad;
+	if (sidesBlend < 0.001) {
+		if (grad > 0.0) color.a *= 0.0;
+	}
+	else {
+		color.a *= 1.0 - clamp(grad * (1.0 - sidesBlend * 0.5) * 100.0 + 0.25, 0.0, 1.0);
+	}
 }
 
 vec4 sampleImage(sampler2D image, vec2 uv) {
@@ -71,7 +91,8 @@ void processSide(inout vec4 color, float angle, vec2 uv) {
 	vec4 side = sampleImage(sourceImage, uv);
 	
 	if (imageMode == 0) applyGradient(side, uv);
-	else applySolid(side, uv);
+	else if (imageMode == 1) applySolid(side, uv);
+	else applySide(side, uv);
 	
 	applyTriangle(side, origUV);
 	

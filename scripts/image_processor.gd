@@ -17,6 +17,12 @@ func load_image(path: String) -> void:
 		_can_update = true
 		update_image()
 
+func load_side(path: String) -> void:
+	var side_img = Image.load_from_file(path)
+	var texture := ImageTexture.create_from_image(side_img)
+	%SidePreview.texture = texture
+	texture_material.set_shader_parameter("sideImage", texture)
+
 func save_image(path: String) -> void:
 	var img = %RenderViewport.get_texture().get_image()
 	Thread.new().start(_save_image_thread.bind(img, path, %SavePath))
@@ -38,6 +44,8 @@ func update_image() -> void:
 	texture_material.set_shader_parameter("gradientPower", %LinearSlider.value)
 	texture_material.set_shader_parameter("solidValue", solidValue)
 	texture_material.set_shader_parameter("blendValue", blendValue)
+	texture_material.set_shader_parameter("sideMode", %SideMode.selected)
+	texture_material.set_shader_parameter("sidesBlend", %SidesBlend.value)
 
 func _save_image_thread(img: Image, path: String, path_text: LineEdit) -> void:
 	if not _can_update: return
